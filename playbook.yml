@@ -1,0 +1,49 @@
+- name: Install python
+  hosts: vm
+  become: true
+  become_method: sudo
+  become_user: root
+  gather_facts: no
+  timeout: 60
+
+  pre_tasks:
+    - name: Run a command that uses non-posix shell-isms (in this example /bin/sh doesn't handle redirection and wildcards together but bash does)
+      ansible.builtin.raw: apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
+
+- name: Install docker
+  hosts: vm
+  become: true
+  become_method: sudo
+  become_user: root
+
+  timeout: 300
+  tasks:
+    - name: Install makefile
+      community.general.apk:
+        name: make
+        state: present
+        update_cache: true
+
+    - name: Install docker
+      community.general.apk:
+        name: docker
+        state: present
+        update_cache: true
+
+    - name: Install docker compose
+      community.general.apk:
+        name: docker-compose
+        state: present
+        update_cache: true
+    
+    - name: Install git
+      community.general.apk:
+        name: git
+        state: present
+        update_cache: true
+
+    - name: Start docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
